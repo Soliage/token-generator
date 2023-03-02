@@ -17,8 +17,8 @@ import {
  } from '@solana/web3.js';
 
 type TokenWrapper = {
-    mintAddress: PublicKey;
-    tokenAccount: PublicKey;
+    mintAddress: PublicKey; // token address
+    tokenAccount: PublicKey; // recipient's token account
 }
 
 async function createNfts(connection: Connection, wallet: Keypair): Promise<TokenWrapper> {
@@ -78,19 +78,25 @@ async function main() {
       );
     await connection.confirmTransaction(airdropSignature);
 
-    const wrapper = await createNfts(connection, wallet);
+    let nftCollection: Array<TokenWrapper> = [];
+    for (let i = 1; i <= 2; i++) {
+        nftCollection.push(await createNfts(connection, wallet));
+    }
+    console.log(`Generated ${nftCollection.length} NFTs.`);
+
+    const demoNft: TokenWrapper = nftCollection[0]
 
     const toWalletPubkey = new PublicKey('4RLpP7eio996DqLcSpV2f9mKSXsogSuezJZctmyXzroo');
     const toAccount = await getOrCreateAssociatedTokenAccount(
         connection,
         wallet,
-        wrapper.mintAddress,
+        demoNft.mintAddress,
         toWalletPubkey
     );
 
     const tx = new Transaction();
     tx.add(createTransferInstruction(
-        wrapper.tokenAccount,
+        demoNft.tokenAccount,
         toAccount.address,
         wallet.publicKey,
         1
@@ -100,7 +106,7 @@ async function main() {
 
     const fromAccountInfo = await getAccount(
         connection,
-        wrapper.tokenAccount
+        demoNft.tokenAccount
     );
     const toAccountInfo = await getAccount(
         connection,
