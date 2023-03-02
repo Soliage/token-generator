@@ -6,7 +6,7 @@ import {
     getAccount, 
     getOrCreateAssociatedTokenAccount, 
     mintTo
- } from '@solana/spl-token'
+ } from '@solana/spl-token';
 import { 
     Connection, 
     Keypair, 
@@ -46,8 +46,8 @@ async function createNfts(connection: Connection, wallet: Keypair): Promise<Toke
         1
     );
 
-    console.log(`mintPubkey: ${mint}`)
-    console.log(`associatedTokenAccount: ${associatedTokenAccount.address}`)
+    console.log(`mintPubkey: ${mint}`);
+    console.log(`associatedTokenAccount: ${associatedTokenAccount.address}`);
 
     let transaction = new Transaction()
         .add(createSetAuthorityInstruction(
@@ -69,18 +69,18 @@ async function createNfts(connection: Connection, wallet: Keypair): Promise<Toke
 }
 
 async function main() {
-    const connection = new Connection('http://127.0.0.1:8899')
+    const connection = new Connection('http://127.0.0.1:8899');
     // const connection = new web3.Connection(web3.clusterApiUrl('devnet'))
-    const wallet = Keypair.generate()
+    const wallet = Keypair.generate();
     const airdropSignature = await connection.requestAirdrop(
         wallet.publicKey,
         LAMPORTS_PER_SOL,
-      )
+      );
     await connection.confirmTransaction(airdropSignature);
 
-    const wrapper = await createNfts(connection, wallet)
+    const wrapper = await createNfts(connection, wallet);
 
-    const toWalletPubkey = new PublicKey('4RLpP7eio996DqLcSpV2f9mKSXsogSuezJZctmyXzroo')
+    const toWalletPubkey = new PublicKey('4RLpP7eio996DqLcSpV2f9mKSXsogSuezJZctmyXzroo');
     const toAccount = await getOrCreateAssociatedTokenAccount(
         connection,
         wallet,
@@ -111,7 +111,7 @@ async function main() {
 }
 
 main().then(() => {
-    console.log("Finished successfully")
+    console.log("Finished successfully");
 }).catch((error) => {
-    console.error(error)
-})
+    console.error(error);
+});
