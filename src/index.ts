@@ -15,6 +15,7 @@ import {
     sendAndConfirmTransaction, 
     Transaction
  } from '@solana/web3.js';
+import { randomPayer } from "./config"
 
 type TokenWrapper = {
     mintAddress: PublicKey; // token address
@@ -22,6 +23,7 @@ type TokenWrapper = {
 }
 
 async function createNfts(connection: Connection, wallet: Keypair): Promise<TokenWrapper> {
+
     // This function mints a single NFT by first creating a new token with 0 decimals.
     const mint = await createMint(
         connection,
@@ -30,6 +32,7 @@ async function createNfts(connection: Connection, wallet: Keypair): Promise<Toke
         wallet.publicKey,
         0
     );
+
     // Then we generate a token account for our wallet.
     const associatedTokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
@@ -37,6 +40,7 @@ async function createNfts(connection: Connection, wallet: Keypair): Promise<Toke
         mint,
         wallet.publicKey
     );
+
     // And mint a single token to ourselves.
     await mintTo(
         connection,
@@ -46,6 +50,7 @@ async function createNfts(connection: Connection, wallet: Keypair): Promise<Toke
         wallet,
         1
     );
+
     // And finally disable any future minting.
     const tx = new Transaction()
         .add(createSetAuthorityInstruction(
@@ -55,9 +60,11 @@ async function createNfts(connection: Connection, wallet: Keypair): Promise<Toke
         null
         ));
     await sendAndConfirmTransaction(connection, tx, [wallet]);
+
     // Finally we print the token address and how much we hold in our account.
     const accountInfo = await getAccount(connection, associatedTokenAccount.address);
     console.log(`mintPubkey: ${mint}, value: ${accountInfo.amount}`);
+    
     // And return the token address and the token account address.
     return {
         mintAddress: mint, 
@@ -66,15 +73,11 @@ async function createNfts(connection: Connection, wallet: Keypair): Promise<Toke
 }
 
 async function main() {
-    // First we create a connection and generate a keypair, airdropping SOL to our new keypair.
     const connection = new Connection('http://127.0.0.1:8899');
-    const wallet = Keypair.generate();
-    const airdropSignature = await connection.requestAirdrop(
-        wallet.publicKey,
-        LAMPORTS_PER_SOL,
-      );
-    await connection.confirmTransaction(airdropSignature);
 
+    // First we create a connection and generate a keypair, airdropping SOL to our new keypair.
+    const wallet = await randomPayer();
+    
     // Now we mint 10 NFTs to our new wallet and push the mint address and our wallet's 
     // token account to the nftCollection array.
     let nftCollection: Array<TokenWrapper> = [];
@@ -83,9 +86,12 @@ async function main() {
     }
     console.log(`Generated ${nftCollection.length} NFTs.`);
 
+
+    
     // We select one of these NFTs for a test transfer to a random wallet
     const demoNft: TokenWrapper = nftCollection[0]
     const toWalletPubkey = new PublicKey('4RLpP7eio996DqLcSpV2f9mKSXsogSuezJZctmyXzroo');
+
     // First we have to generate a token account for this wallet, funding the rent for the account
     const toAccount = await getOrCreateAssociatedTokenAccount(
         connection,
@@ -93,6 +99,7 @@ async function main() {
         demoNft.mintAddress,
         toWalletPubkey
     );
+
     // Then we create the transfer instruction and send and confirm our tx.
     const tx = new Transaction();
     tx.add(createTransferInstruction(
@@ -115,6 +122,11 @@ async function main() {
     );
     console.log(`From account: ${fromAccountInfo.amount}`);
     console.log(`To account: ${toAccountInfo.amount}`);
+
+    console.log(await getAccount(
+        connection,
+        demoNft.mintAddress
+    ));
 }
 
 main().then(() => {
