@@ -4,10 +4,13 @@ import {
     createSetAuthorityInstruction, 
     createTransferInstruction, 
     getAccount, 
+    getMint, 
     getOrCreateAssociatedTokenAccount, 
-    mintTo
+    mintTo,
+    TOKEN_PROGRAM_ID
  } from '@solana/spl-token';
 import { 
+    clusterApiUrl,
     Connection, 
     Keypair, 
     LAMPORTS_PER_SOL, 
@@ -15,7 +18,9 @@ import {
     sendAndConfirmTransaction, 
     Transaction
  } from '@solana/web3.js';
-import { randomPayer } from "./config"
+import { randomPayer } from "./config";
+
+const localnet = 'http://127.0.0.1:8899'
 
 type TokenWrapper = {
     mintAddress: PublicKey; // token address
@@ -73,7 +78,7 @@ async function createNfts(connection: Connection, wallet: Keypair): Promise<Toke
 }
 
 async function main() {
-    const connection = new Connection('http://127.0.0.1:8899');
+    const connection = new Connection(localnet);
 
     // First we create a connection and generate a keypair, airdropping SOL to our new keypair.
     const wallet = await randomPayer();
@@ -81,13 +86,13 @@ async function main() {
     // Now we mint 10 NFTs to our new wallet and push the mint address and our wallet's 
     // token account to the nftCollection array.
     let nftCollection: Array<TokenWrapper> = [];
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 1; i++) {
         nftCollection.push(await createNfts(connection, wallet));
     }
     console.log(`Generated ${nftCollection.length} NFTs.`);
 
 
-    
+
     // We select one of these NFTs for a test transfer to a random wallet
     const demoNft: TokenWrapper = nftCollection[0]
     const toWalletPubkey = new PublicKey('4RLpP7eio996DqLcSpV2f9mKSXsogSuezJZctmyXzroo');
@@ -121,12 +126,41 @@ async function main() {
         toAccount.address
     );
     console.log(`From account: ${fromAccountInfo.amount}`);
-    console.log(`To account: ${toAccountInfo.amount}`);
+    console.log(`To account: ${toAccountInfo}`);
 
-    console.log(await getAccount(
+    console.log(await getMint(
         connection,
         demoNft.mintAddress
     ));
+
+    (async () => {      
+        const accounts = await connection.getParsedProgramAccounts(
+          TOKEN_PROGRAM_ID, // new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+          {
+            filters: [
+              {
+                dataSize: 165, // number of bytes
+              },
+              {
+                memcmp: {
+                  offset: 0, // number of bytes
+                  bytes: demoNft.mintAddress.toBase58(), // base58 encoded string
+                },
+              },
+            ],
+          }
+        );
+
+        accounts.forEach((account, i) => {
+            const parsedAccountInfo:any = account.account.data;
+            const tokenBalance: number = parsedAccountInfo["parsed"]["info"]["tokenAmount"]["uiAmount"];
+            if (tokenBalance > 0) {
+                console.log(
+                    `Found ${parsedAccountInfo["parsed"]["info"]['owner']} for token account ${demoNft.mintAddress.toBase58()}: `
+                  );
+            }
+        });
+    })();
 }
 
 main().then(() => {
