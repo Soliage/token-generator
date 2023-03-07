@@ -126,12 +126,12 @@ async function main() {
         toAccount.address
     );
     console.log(`From account: ${fromAccountInfo.amount}`);
-    console.log(`To account: ${toAccountInfo}`);
+    console.log(`To account: ${toAccountInfo.amount}`);
 
-    console.log(await getMint(
-        connection,
-        demoNft.mintAddress
-    ));
+    // console.log(await getMint(
+    //     connection,
+    //     demoNft.mintAddress
+    // ));
 
     (async () => {      
         const accounts = await connection.getParsedProgramAccounts(
@@ -156,7 +156,9 @@ async function main() {
             const tokenBalance: number = parsedAccountInfo["parsed"]["info"]["tokenAmount"]["uiAmount"];
             if (tokenBalance > 0) {
                 console.log(
-                    `Found ${parsedAccountInfo["parsed"]["info"]['owner']} for token account ${demoNft.mintAddress.toBase58()}: `
+                    `Found ${parsedAccountInfo["parsed"]["info"]['owner']} 
+                    for token account ${demoNft.mintAddress.toBase58()} at
+                    mintAddress ${demoNft.mintAddress.toBase58()}`
                   );
             }
         });
