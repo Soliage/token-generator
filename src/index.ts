@@ -95,7 +95,7 @@ async function main() {
 
     // We select one of these NFTs for a test transfer to a random wallet
     const demoNft: TokenWrapper = nftCollection[0]
-    const toWalletPubkey = new PublicKey('4RLpP7eio996DqLcSpV2f9mKSXsogSuezJZctmyXzroo');
+    const toWalletPubkey = new PublicKey('7Xjksnc8b8sZ7KyqE4e1TiJVq2tFxyzbd1Ei3TNvCsMH'); // Steward's public key
 
     // First we have to generate a token account for this wallet, funding the rent for the account
     const toAccount = await getOrCreateAssociatedTokenAccount(
@@ -130,8 +130,8 @@ async function main() {
 
 
     const currentHolder = await getWalletAddress(connection, demoNft.mintAddress.toBase58());
-    
-    // For testing purposes, we can plug in an existing mintAddress
+
+    // For quicker testing purposes, we can plug in an existing mintAddress
     // const currentHolder = await getWalletAddress(connection, 'HqnbTEgA7Ha4zqvSbZYBQ319VCqYaSqtZLYcgFsPMuZK');
 
 
