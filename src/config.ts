@@ -1,6 +1,6 @@
 import { LAMPORTS_PER_SOL, Keypair, Connection, PublicKey } from "@solana/web3.js";
 import * as anchor from "@coral-xyz/anchor";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Account, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 // anchor.setProvider(anchor.AnchorProvider.env());
 // const connection = anchor.getProvider().connection;
@@ -13,8 +13,8 @@ const randomPayer = async (lamports = LAMPORTS_PER_SOL) => {
     return wallet;
 }
 
-async function getWalletAddress(connection: Connection, tokenAccount: string): Promise<PublicKey> {
-    let pubkey: PublicKey = new PublicKey('a');
+async function getWalletAddress(connection: Connection, mintAccount: string): Promise<PublicKey | undefined> {
+    let pubkey: PublicKey | undefined = undefined;
     const accounts = await connection.getParsedProgramAccounts(
         TOKEN_PROGRAM_ID, // new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
         {
@@ -25,7 +25,7 @@ async function getWalletAddress(connection: Connection, tokenAccount: string): P
             {
                 memcmp: {
                 offset: 0, // number of bytes
-                bytes: tokenAccount, // base58 encoded string
+                bytes: mintAccount, // base58 encoded string
                 },
             },
             ],
@@ -37,9 +37,18 @@ async function getWalletAddress(connection: Connection, tokenAccount: string): P
         const tokenBalance: number = parsedAccountInfo["parsed"]["info"]["tokenAmount"]["uiAmount"];
         if (tokenBalance > 0) {
             pubkey = parsedAccountInfo["parsed"]["info"]['owner'];
+            console.log(
+                `Found ${parsedAccountInfo["parsed"]["info"]['owner']} 
+                for token account ${account.pubkey} at
+                mintAddress ${mintAccount}`
+              );
         }
     });
-    return pubkey
+
+    if (pubkey === undefined) {
+        throw new Error(`No accounts found for token ${mintAccount}.`);
+    }
+    return pubkey;
 }
 
 export {

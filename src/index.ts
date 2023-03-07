@@ -18,7 +18,7 @@ import {
     sendAndConfirmTransaction, 
     Transaction
  } from '@solana/web3.js';
-import { randomPayer } from "./config";
+import { randomPayer, getWalletAddress } from "./config";
 
 const localnet = 'http://127.0.0.1:8899'
 
@@ -128,41 +128,13 @@ async function main() {
     console.log(`From account: ${fromAccountInfo.amount}`);
     console.log(`To account: ${toAccountInfo.amount}`);
 
-    // console.log(await getMint(
-    //     connection,
-    //     demoNft.mintAddress
-    // ));
 
-    (async () => {      
-        const accounts = await connection.getParsedProgramAccounts(
-          TOKEN_PROGRAM_ID, // new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-          {
-            filters: [
-              {
-                dataSize: 165, // number of bytes
-              },
-              {
-                memcmp: {
-                  offset: 0, // number of bytes
-                  bytes: demoNft.mintAddress.toBase58(), // base58 encoded string
-                },
-              },
-            ],
-          }
-        );
+    const currentHolder = await getWalletAddress(connection, demoNft.mintAddress.toBase58());
+    
+    // For testing purposes, we can plug in an existing mintAddress
+    // const currentHolder = await getWalletAddress(connection, 'HqnbTEgA7Ha4zqvSbZYBQ319VCqYaSqtZLYcgFsPMuZK');
 
-        accounts.forEach((account, i) => {
-            const parsedAccountInfo:any = account.account.data;
-            const tokenBalance: number = parsedAccountInfo["parsed"]["info"]["tokenAmount"]["uiAmount"];
-            if (tokenBalance > 0) {
-                console.log(
-                    `Found ${parsedAccountInfo["parsed"]["info"]['owner']} 
-                    for token account ${demoNft.mintAddress.toBase58()} at
-                    mintAddress ${demoNft.mintAddress.toBase58()}`
-                  );
-            }
-        });
-    })();
+
 }
 
 main().then(() => {
