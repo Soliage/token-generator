@@ -18,9 +18,9 @@ import {
     sendAndConfirmTransaction, 
     Transaction
  } from '@solana/web3.js';
-import { randomPayer, getWalletAddress } from "./config";
+import { randomPayer, getWalletAddress, initializeKeypair } from "./config";
 
-const localnet = 'http://127.0.0.1:8899'
+const url = clusterApiUrl('devnet');
 
 type TokenWrapper = {
     mintAddress: PublicKey; // token address
@@ -78,10 +78,11 @@ async function createNfts(connection: Connection, wallet: Keypair): Promise<Toke
 }
 
 async function main() {
-    const connection = new Connection(localnet);
+    const connection = new Connection(url);
 
     // First we create a connection and generate a keypair, airdropping SOL to our new keypair.
-    const wallet = await randomPayer();
+    // const wallet = await randomPayer();
+    const wallet = initializeKeypair("./.keys/soliage_dev.json");
     
     // Now we mint 10 NFTs to our new wallet and push the mint address and our wallet's 
     // token account to the nftCollection array.

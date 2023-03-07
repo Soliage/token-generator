@@ -1,16 +1,24 @@
-import { LAMPORTS_PER_SOL, Keypair, Connection, PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, Keypair, Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 import * as anchor from "@coral-xyz/anchor";
 import { Account, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import fs from 'fs';
 
 // anchor.setProvider(anchor.AnchorProvider.env());
 // const connection = anchor.getProvider().connection;
-const connection = new Connection('http://127.0.0.1:8899');
+const connection = new Connection(clusterApiUrl('devnet'));
 
 const randomPayer = async (lamports = LAMPORTS_PER_SOL) => {
     const wallet = Keypair.generate();
     const signature = await connection.requestAirdrop(wallet.publicKey, lamports);
     await connection.confirmTransaction(signature);
     return wallet;
+}
+
+function initializeKeypair(path: string): Keypair {
+    // @ts-ignore
+    const parcelData = JSON.parse(fs.readFileSync(path));
+    const keypair = anchor.web3.Keypair.fromSecretKey(new Uint8Array(parcelData));
+    return keypair;
 }
 
 async function getWalletAddress(connection: Connection, mintAccount: string): Promise<PublicKey | undefined> {
@@ -53,5 +61,6 @@ async function getWalletAddress(connection: Connection, mintAccount: string): Pr
 
 export {
     randomPayer,
+    initializeKeypair,
     getWalletAddress,
 }
