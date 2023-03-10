@@ -112,7 +112,7 @@ async function createNft(connection: Connection, wallet: Keypair): Promise<Token
 
     // Finally we print the token address and how much we hold in our account.
     const accountInfo = await getAccount(connection, associatedTokenAccount.address);
-    console.log(`mintPubkey: ${mint}, value: ${accountInfo.amount}`);
+    console.log(`Minted token -- mintPubkey: ${mint}, value: ${accountInfo.amount}`);
     
     // And return the token address and the token account address.
     return {
