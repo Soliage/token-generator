@@ -17,6 +17,8 @@ const fs = require("fs");
 
 
 async function main() {
+    const tokens_to_create = 4
+
     // const url = clusterApiUrl('devnet');
     const url = 'http://127.0.0.1:8899'
     const connection = new Connection(url);
@@ -33,7 +35,7 @@ async function main() {
     // We select one of these NFTs for a test transfer to the steward
     const toWalletPubkey = new PublicKey('7Xjksnc8b8sZ7KyqE4e1TiJVq2tFxyzbd1Ei3TNvCsMH'); // Steward's public key
     
-    for (let i = 1; i <= 1; i++) {
+    for (let i = 1; i <= tokens_to_create; i++) {
         const nft = await createNft(connection, wallet)
 
         // First we have to generate a token account for this wallet, funding the rent for the account

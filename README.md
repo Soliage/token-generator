@@ -4,6 +4,7 @@ The token generator is used to generate NFTs in localnet for use in the @soliage
  
 ## Quickstart
 `npm install`
+Set tokens_to_create in main.ts to desired number of tokens.
 `npm start`
 
 
